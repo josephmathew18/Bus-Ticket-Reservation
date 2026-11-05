@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Bus Ticket Reservation Management System{% endblock %}</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-light">
+
+    <div class="d-flex" id="wrapper">
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar-wrapper" class="bg-dark text-white border-end shadow-sm">
+            <div class="sidebar-heading d-flex align-items-center gap-2 p-3 border-bottom border-secondary">
+                <div class="brand-icon-box bg-primary text-white rounded-3 d-flex align-items-center justify-content-center">
+                    <i class="bi bi-bus-front-fill fs-4"></i>
+                </div>
+                <div>
+                    <h5 class="mb-0 fw-bold tracking-tight text-white">OmniBus Pro</h5>
+                    <small class="text-secondary fs-xs">Transit Management</small>
+                </div>
+            </div>
+
+            <div class="list-group list-group-flush my-3 px-2">
+                <a href="#dashboard" class="nav-item-link list-group-item list-group-item-action d-flex align-items-center gap-3 active rounded-2 mb-1" data-section="dashboard">
+                    <i class="bi bi-speedometer2 fs-5"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#buses" class="nav-item-link list-group-item list-group-item-action d-flex align-items-center gap-3 rounded-2 mb-1" data-section="buses">
+                    <i class="bi bi-truck-front-fill fs-5"></i>
+                    <span>Buses Fleet</span>
+                    <span class="badge bg-secondary ms-auto" id="badge-total-buses">0</span>
+                </a>
+                <a href="#routes" class="nav-item-link list-group-item list-group-item-action d-flex align-items-center gap-3 rounded-2 mb-1" data-section="routes">
+                    <i class="bi bi-signpost-split-fill fs-5"></i>
+                    <span>Routes</span>
+                    <span class="badge bg-secondary ms-auto" id="badge-total-routes">0</span>
+                </a>
+                <a href="#passengers" class="nav-item-link list-group-item list-group-item-action d-flex align-items-center gap-3 rounded-2 mb-1" data-section="passengers">
+                    <i class="bi bi-people-fill fs-5"></i>
+                    <span>Passengers</span>
+                    <span class="badge bg-secondary ms-auto" id="badge-total-passengers">0</span>
+                </a>
+                <a href="#bookings" class="nav-item-link list-group-item list-group-item-action d-flex align-items-center gap-3 rounded-2 mb-1" data-section="bookings">
+                    <i class="bi bi-ticket-perforated-fill fs-5"></i>
+                    <span>Bookings</span>
+                    <span class="badge bg-primary ms-auto" id="badge-total-bookings">0</span>
+                </a>
+                <a href="#payments" class="nav-item-link list-group-item list-group-item-action d-flex align-items-center gap-3 rounded-2 mb-1" data-section="payments">
+                    <i class="bi bi-credit-card-2-front-fill fs-5"></i>
+                    <span>Payments</span>
+                </a>
+            </div>
+
+            <div class="sidebar-footer mt-auto p-3 border-top border-secondary text-secondary">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="status-indicator online"></span>
+                    <small class="fs-xs fw-semibold">Docker & Nginx Online</small>
+                </div>
+                <div class="mt-1 fs-xxs text-muted">MySQL 8.0 &bull; Django REST</div>
+            </div>
+        </aside>
+
+        <!-- Page Content Wrapper -->
+        <div id="page-content-wrapper" class="w-100 d-flex flex-column min-vh-100">
+            <!-- Top Navbar -->
+            <nav class="navbar navbar-expand-lg navbar-white bg-white border-bottom sticky-top px-4 py-2 shadow-xs">
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn btn-outline-secondary btn-sm d-lg-none" id="sidebarToggle" type="button">
+                        <i class="bi bi-list fs-5"></i>
+                    </button>
+                    <div class="page-header-title">
+                        <h5 class="mb-0 fw-bold text-dark" id="currentSectionTitle">Dashboard Overview</h5>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0 fs-xs text-muted">
+                                <li class="breadcrumb-item"><a href="#dashboard" class="text-decoration-none text-muted">Home</a></li>
+                                <li class="breadcrumb-item active text-primary" id="breadcrumbCurrent">Dashboard</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+
+                <div class="ms-auto d-flex align-items-center gap-3">
+                    <button class="btn btn-primary btn-sm d-flex align-items-center gap-2 rounded-pill px-3 shadow-sm" onclick="openNewBookingModal()">
+                        <i class="bi bi-plus-circle-fill"></i>
+                        <span>Book Ticket</span>
+                    </button>
+
+                    <div class="vr mx-1 text-secondary opacity-25"></div>
+
+                    <div class="dropdown">
+                        <button class="btn btn-light btn-sm rounded-pill d-flex align-items-center gap-2 border" type="button" data-bs-toggle="dropdown">
+                            <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                            <span class="fw-semibold text-dark fs-sm d-none d-md-inline">System Admin</span>
+                            <i class="bi bi-chevron-down fs-xs text-muted"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                            <li><h6 class="dropdown-header">System Administration</h6></li>
+                            <li><a class="dropdown-item" href="/admin/" target="_blank"><i class="bi bi-shield-lock me-2 text-primary"></i>Django Admin</a></li>
+                            <li><a class="dropdown-item" href="/api/" target="_blank"><i class="bi bi-code-slash me-2 text-info"></i>REST API Root</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="refreshCurrentSection()"><i class="bi bi-arrow-clockwise me-2 text-success"></i>Sync Data</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content Area -->
+            <main class="container-fluid px-4 py-4 flex-grow-1">
+                {% block content %}{% endblock %}
+            </main>
+
+            <!-- Footer -->
+            <footer class="footer bg-white border-top py-3 px-4 text-muted fs-xs text-center d-flex flex-wrap justify-content-between align-items-center">
+                <div>&copy; 2026 <strong>Bus Ticket Reservation Management System</strong>. Production Grade Docker & Nginx Deployment.</div>
+                <div class="d-flex gap-3">
+                    <span><i class="bi bi-check-circle-fill text-success me-1"></i>Nginx 1.25 Proxy</span>
+                    <span><i class="bi bi-check-circle-fill text-success me-1"></i>MySQL 8.0</span>
+                    <span><i class="bi bi-check-circle-fill text-success me-1"></i>Gunicorn WSGI</span>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1090;">
+        <div id="liveToast" class="toast align-items-center text-white border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center gap-2">
+                    <i id="toastIcon" class="bi bi-info-circle fs-5"></i>
+                    <span id="toastMessage">Action completed successfully.</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 & Chart.js Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
+

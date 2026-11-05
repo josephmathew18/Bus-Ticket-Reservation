@@ -1,0 +1,75 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: bus_reservation_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password123}
+      MYSQL_DATABASE: ${DB_NAME:-bus_reservation_db}
+      MYSQL_USER: ${DB_USER:-bus_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-bus_password123}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD} || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    networks:
+      - bus_network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: bus-ticket-reservation:latest
+    container_name: bus_reservation_backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - DB_ENGINE=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=${DB_NAME:-bus_reservation_db}
+      - DB_USER=${DB_USER:-bus_user}
+      - DB_PASSWORD=${DB_PASSWORD:-bus_password123}
+      - DEBUG=False
+    volumes:
+      - static_volume:/app/staticfiles
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - bus_network
+
+  nginx:
+    image: nginx:alpine
+    container_name: bus_reservation_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - static_volume:/app/staticfiles:ro
+    depends_on:
+      - backend
+    networks:
+      - bus_network
+
+volumes:
+  mysql_data:
+    driver: local
+    name: bus_reservation_mysql_data
+  static_volume:
+    driver: local
+    name: bus_reservation_static_volume
+
+networks:
+  bus_network:
+    driver: bridge
+    name: bus_reservation_network
+
